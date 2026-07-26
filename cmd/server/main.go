@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	configaccess "github.com/router-for-me/CLIProxyAPI/v7/internal/access/config_access"
@@ -528,7 +529,17 @@ func main() {
 		return
 	}
 	if cfg == nil {
-		cfg = &config.Config{}
+	    cfg = &config.Config{}
+	}
+	
+	// Allow platforms like Vercel/Cloud Run/Fly.io to override the listening port.
+	if port := os.Getenv("PORT"); port != "" {
+	    if p, err := strconv.Atoi(port); err == nil {
+	        cfg.Port = p
+	        log.Infof("Using PORT from environment: %d", p)
+	    } else {
+	        log.Warnf("Invalid PORT environment variable: %q", port)
+	    }
 	}
 
 	// In cloud deploy mode, check if we have a valid configuration
